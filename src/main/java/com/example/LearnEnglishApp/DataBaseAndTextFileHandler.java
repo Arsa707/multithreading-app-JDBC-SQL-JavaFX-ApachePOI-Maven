@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -73,14 +74,16 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
     @Override
     public boolean reconnection() {
         boolean result = super.reconnection();
-        if (result==false && isReconnectionQuestionAsked()) typeHandler = TypeHandler.TextFileTypeHandler;
+        if (!result && isReconnectionQuestionAsked()) typeHandler = TypeHandler.TextFileTypeHandler;
         return result;
     }
 
     public void exportDatabaseTableToExcel(String table) throws SQLException, IOException {
-        Path excelFilePath = Const.getTextFilePatch(table);
 
-        //Создаем первый лист файла
+        Path excelFilePath = Const.getTextFilePatch(table);
+        boolean isFile = Files.exists(excelFilePath);
+        if (!needTextFileMode() || !isFile) {
+            //Создаем первый лист файла
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("Reviews");
 
@@ -101,6 +104,7 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
         FileOutputStream outputStream = new FileOutputStream(excelFilePath.toString());
         workbook.write(outputStream);
         workbook.close();
+        }
     }
 
     private void writeHeaderLine(HSSFSheet sheet, String table) {
