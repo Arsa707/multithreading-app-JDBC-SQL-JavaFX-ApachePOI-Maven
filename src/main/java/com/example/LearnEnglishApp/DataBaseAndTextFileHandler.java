@@ -19,9 +19,10 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
     private static TypeHandler typeHandler = TypeHandler.DatabaseTypeHandler;
 
     public boolean needTextFileMode() {
-        if (getTypeHandler() == TypeHandler.TextFileTypeHandler && isReconnectionQuestionAsked()) return true;
-
-        boolean needTextFileMode = !(reconnection());
+        boolean needTextFileMode;
+        if (getTypeHandler() == TypeHandler.TextFileTypeHandler && isReconnectionQuestionAsked())
+            needTextFileMode = true;
+        else needTextFileMode = !(reconnection());
         if (needTextFileMode) typeHandler = TypeHandler.TextFileTypeHandler;
         return needTextFileMode;
     }
@@ -47,26 +48,33 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
             //получаем данные из файла
             FileInputStream fileInputStream = new FileInputStream(textFilePatch.toString());
             Workbook workbook = new HSSFWorkbook();
-            for(int i = 0;i<columns.size();i++) {
+            for (int i = 0; i < columns.size(); i++) {
 
-               String columnCell = workbook.getSheetAt(0).getRow(0).getCell(i).getStringCellValue();
-               if(columnCell.equals(column)) {
-                   boolean isFirst = true;
-                   for(Row row:workbook.getSheetAt(0)) {
-                       if(isFirst){
-                           isFirst = false;
-                           continue;
-                       }
-                       String cell = workbook.getSheetAt(0).getRow(0).getCell(i).getStringCellValue();
-                       if (cell.equals("")) break;
-                       list.add(cell);
-                   }
-               }
+                String columnCell = workbook.getSheetAt(0).getRow(0).getCell(i).getStringCellValue();
+                if (columnCell.equals(column)) {
+                    boolean isFirst = true;
+                    for (Row row : workbook.getSheetAt(0)) {
+                        if (isFirst) {
+                            isFirst = false;
+                            continue;
+                        }
+                        String cell = workbook.getSheetAt(0).getRow(0).getCell(i).getStringCellValue();
+                        if (cell.equals("")) break;
+                        list.add(cell);
+                    }
+                }
             }
 
             fileInputStream.close();
         } else return super.getArrayListWords(column);
         return list;
+    }
+
+    @Override
+    public boolean reconnection() {
+        boolean result = super.reconnection();
+        if (result==false && isReconnectionQuestionAsked()) typeHandler = TypeHandler.TextFileTypeHandler;
+        return result;
     }
 
     public void exportDatabaseTableToExcel(String table) throws SQLException, IOException {
@@ -76,14 +84,18 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("Reviews");
 
+
         //Делаем запрос к БД
         ResultSet resultSet;
         String stringSQL = "SELECT * FROM " + table;
         resultSet = getResulSet(stringSQL);
 
-        //Записываем файл Excel
+        //Создаем файл Excel
         writeHeaderLine(sheet, table);
-        writeDataLines(resultSet, workbook, sheet, table);
+
+        if (!needTextFileMode()) {
+            writeDataLines(resultSet, workbook, sheet, table);
+        }
 
         //Записываем файл
         FileOutputStream outputStream = new FileOutputStream(excelFilePath.toString());
@@ -97,7 +109,7 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
         Cell headerCell = null;
         ArrayList<String> columns = Const.getColumnsOfTable(table);
 
-        for(int i = 0; i<columns.size();i++){
+        for (int i = 0; i < columns.size(); i++) {
             headerCell = headerRow.createCell(i);
             headerCell.setCellValue(columns.get(i));
         }
@@ -112,7 +124,7 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
             Row row = sheet.createRow(rowCount++);
             Cell cell = null;
 
-            for (int i = 0; i<columns.size();i++) {
+            for (int i = 0; i < columns.size(); i++) {
                 String resultColumn = result.getString(columns.get(i));
                 cell = row.createCell(i);
                 cell.setCellValue(resultColumn);
