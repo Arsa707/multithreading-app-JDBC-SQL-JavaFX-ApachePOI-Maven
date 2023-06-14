@@ -21,15 +21,14 @@ public class HelloController {
             try {
                 loader.load();
             } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+                e.printStackTrace();
+           }
 
             Parent root = loader.getRoot();
             Stage stage = new Stage();
             stage.setTitle("Learn English words");
             stage.setScene(new Scene(root));
             stage.showAndWait();
-
         });
     }
 }

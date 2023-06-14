@@ -1,16 +1,13 @@
 package com.example.LearnEnglishApp;
 
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 
-import java.lang.reflect.Type;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -33,7 +30,7 @@ public class BasicViewController {
     private TextFlow HighScoreText;
 
     @FXML
-    ArrayList<Button> getButtonsArray(){
+    ArrayList<Button> getButtonsArray() {
         ArrayList<Button> buttonsArray = new ArrayList<>();
         buttonsArray.add(ButtonWord1);
         buttonsArray.add(ButtonWord2);
@@ -42,7 +39,7 @@ public class BasicViewController {
     }
 
     @FXML
-    void setTextOfQuestion(String wordOfQuestion){
+    void setTextOfQuestion(String wordOfQuestion) {
         //инициализируем текст вопроса
         Text textOfQuestion = new Text(wordOfQuestion);
         textOfQuestion.setFill(Color.BLACK);
@@ -61,46 +58,44 @@ public class BasicViewController {
     }
 
     @FXML
-    void setTextOfButton(ArrayList<String> textOfButton){
+    void setTextOfButton(ArrayList<String> textOfButton) {
         ArrayList<Button> buttonsArray = getButtonsArray();
-        for (int i = 0; i<3; i++){
+        for (int i = 0; i < 3; i++) {
             buttonsArray.get(i).setText(textOfButton.get(i));
         }
     }
 
     @FXML
-    void setTextOfHighScore(String selectTextOfButton, String actualTextOfQuestion){
+    void setTextOfHighScore(String selectTextOfButton, String actualTextOfQuestion) throws SQLException {
         //переменная актуального текста рекорда
-        String actualTextOfHighScore = "";
+        String actualTextOfHighScore;
         //получаем актуальный текст рекорда
         ObservableList<Node> nodes = HighScoreText.getChildren();
         StringBuilder sb = new StringBuilder();
-        if (nodes.size() == 0){
+        if (nodes.size() == 0) {
             actualTextOfHighScore = "0";
-        }
-        else {
+        } else {
             for (Node node : nodes) {
-                StringBuilder append = sb.append((((Text) node).getText()));
+                sb.append((((Text) node).getText()));
             }
-             actualTextOfHighScore = sb.toString();
+            actualTextOfHighScore = sb.toString();
         }
         int numberOfHighScore = Integer.parseInt(actualTextOfHighScore);
 
         //добавляем очки, в зависимости от успешного выбора кнопки
         DatabaseHandler databaseHandler = new DatabaseHandler();
 
-        if (selectTextOfButton.length()>0){
+        if (selectTextOfButton.length() > 0) {
             if (databaseHandler.CheckSelection(selectTextOfButton, actualTextOfQuestion)) {
                 numberOfHighScore++;
-            }
-            else numberOfHighScore = 0;
+            } else numberOfHighScore = 0;
         }
         String totalNumberOfHighScore = String.valueOf(numberOfHighScore);
 
         //инициализируем текст рекорда
         Text textOfHighScore = new Text(totalNumberOfHighScore);
         textOfHighScore.setFill(Color.BLACK);
-        textOfHighScore.setFont(Font.font("Berlin Sans FL Demi",18));
+        textOfHighScore.setFont(Font.font("Berlin Sans FL Demi", 18));
 
         //очищаем текст рекорда
         HighScoreText.getChildren().clear();
@@ -115,17 +110,18 @@ public class BasicViewController {
     }
 
     @FXML
-    void setTextOnTheScene(String selectTextOfButton){
-        DatabaseHandler databaseHandler = new DatabaseHandler();
+    void setTextOnTheScene(String selectTextOfButton) throws SQLException, IOException {
+        DataBaseAndTextFileHandler dataBaseAndTextFileHandler = new DataBaseAndTextFileHandler();
+
         //получаем массивы данных таблицы из БД
-        ArrayList<String> englishWords = databaseHandler.getArrayListWords(Const.WORD);
-        ArrayList<String> RUWords = databaseHandler.getArrayListWords(Const.TRANSLATE_RU);
+        ArrayList<String> englishWords = dataBaseAndTextFileHandler.getArrayListWords(Const.WORD);
+        ArrayList<String> RUWords = dataBaseAndTextFileHandler.getArrayListWords(Const.TRANSLATE_RU);
 
         //создаем массивы для рандомных чисел
-        ArrayList<Integer> randomNumbers = new ArrayList<Integer>();
-        ArrayList<Integer> lastRandomNumbers = new ArrayList<Integer>();
+        ArrayList<Integer> randomNumbers = new ArrayList<>();
+        ArrayList<Integer> lastRandomNumbers = new ArrayList<>();
         //массив для рандомных слов, полученных из БД
-        ArrayList<String> textOfButton = new ArrayList<String>();
+        ArrayList<String> textOfButton = new ArrayList<>();
 
         //переменная с количеством кнопок
         int numberOfButton = getButtonsArray().size();
@@ -141,19 +137,19 @@ public class BasicViewController {
         Random random = new Random();
 
         //заполняем массив рандомных чисел в пределах количества кнопок
-        for(int i = 0; i<numberOfButton; i++) {
+        for (int i = 0; i < numberOfButton; i++) {
             toContinue = true;
             randomNumber = random.nextInt(numberOfWords);
 
-            for (int actNumber:lastRandomNumbers){
-                if (randomNumber==actNumber){
+            for (int actNumber : lastRandomNumbers) {
+                if (randomNumber == actNumber) {
                     toContinue = false;
                     i--;
                     break;
                 }
             }
 
-            if (toContinue){
+            if (toContinue) {
                 lastNumber = randomNumber;
                 randomNumbers.add(randomNumber);
                 lastRandomNumbers.add(lastNumber);
@@ -166,7 +162,7 @@ public class BasicViewController {
         lastRandomNumbers.clear();
 
         //заполняем массив рандомных слов
-        for(int i = 0; i<numberOfButton; i++) {
+        for (int i = 0; i < numberOfButton; i++) {
             toContinue = true;
             randomNumber = random.nextInt(numberOfButton);
 
@@ -187,8 +183,8 @@ public class BasicViewController {
         //переменная со значение текущего текста вопроса
         ObservableList<Node> nodes = LearnText.getChildren();
         StringBuilder sb = new StringBuilder();
-        for (Node node:nodes){
-            StringBuilder append = sb.append((((Text)node).getText()));
+        for (Node node : nodes) {
+            StringBuilder append = sb.append((((Text) node).getText()));
         }
         String actualTextOfQuestion = sb.toString();
 
@@ -196,10 +192,10 @@ public class BasicViewController {
         String wordOfQuestion = "";
 
         //получаем слово для текста вопроса и проверяем на совпадение с текущим
-        for(int i = 0; i<numberOfButton; i ++) {
+        for (int i = 0; i < numberOfButton; i++) {
             randomNumber = random.nextInt(numberOfButton);
             wordOfQuestion = englishWords.get(randomNumbers.get(randomNumber));
-            if (actualTextOfQuestion.equals(wordOfQuestion.toString())){
+            if (actualTextOfQuestion.equals(wordOfQuestion.toString())) {
                 continue;
             }
             wordOfQuestion = englishWords.get(randomNumbers.get(randomNumber));
@@ -213,17 +209,65 @@ public class BasicViewController {
     }
 
     @FXML
-    void initialize (){
-        setTextOnTheScene("");
+    void initialize() {
+        DataBaseAndTextFileHandler dataBaseAndTextFileHandler = new DataBaseAndTextFileHandler();
+
+        //Получаем список таблиц, сами таблицы из БД и обновляем данные файловых таблиц
+        try {
+            ArrayList<String> tables = Const.getAllTables();
+            for (String table : tables) {
+                try {
+                    dataBaseAndTextFileHandler.exportDatabaseTableToExcel(table);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            boolean result = dataBaseAndTextFileHandler.reconnection();
+            if(result){
+                initialize();
+            }
+
+            //доделать реконект, чтобы при переконекте обновлялась страница (мб сделать отдельную процедуру для перезагрузки страница)
+        }
+
+        try {
+            setTextOnTheScene("");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         ButtonWord1.setOnAction(event -> {
-            setTextOnTheScene(ButtonWord1.getText());
+            try {
+                setTextOnTheScene(ButtonWord1.getText());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
         ButtonWord2.setOnAction(event -> {
-            setTextOnTheScene(ButtonWord2.getText());
+            try {
+                setTextOnTheScene(ButtonWord2.getText());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
         ButtonWord3.setOnAction(event -> {
-            setTextOnTheScene(ButtonWord3.getText());
+            try {
+                setTextOnTheScene(ButtonWord3.getText());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 }
