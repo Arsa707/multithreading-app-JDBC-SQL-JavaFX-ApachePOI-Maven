@@ -5,7 +5,10 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
-import javafx.scene.text.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -13,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class BasicViewController {
-
     @FXML
     private Button ButtonWord1;
 
@@ -53,8 +55,6 @@ public class BasicViewController {
         //выравниваем текст вопроса по центру
         LearnText.setTextAlignment(TextAlignment.CENTER);
 
-        //без этого метода не появляется надпись, пока не будет изменен размер изображения
-        LearnText.autosize();
     }
 
     @FXML
@@ -66,7 +66,7 @@ public class BasicViewController {
     }
 
     @FXML
-    void setTextOfHighScore(String selectTextOfButton, String actualTextOfQuestion) throws SQLException {
+    void setTextOfHighScore(String selectTextOfButton, String actualTextOfQuestion) throws SQLException, IOException {
         //переменная актуального текста рекорда
         String actualTextOfHighScore;
         //получаем актуальный текст рекорда
@@ -83,10 +83,10 @@ public class BasicViewController {
         int numberOfHighScore = Integer.parseInt(actualTextOfHighScore);
 
         //добавляем очки, в зависимости от успешного выбора кнопки
-        DatabaseHandler databaseHandler = new DatabaseHandler();
+        DataBaseAndTextFileHandler dataBaseAndTextFileHandler = new DataBaseAndTextFileHandler();
 
         if (selectTextOfButton.length() > 0) {
-            if (databaseHandler.CheckSelection(selectTextOfButton, actualTextOfQuestion)) {
+            if (dataBaseAndTextFileHandler.CheckSelection(selectTextOfButton, actualTextOfQuestion)) {
                 numberOfHighScore++;
             } else numberOfHighScore = 0;
         }
@@ -105,8 +105,7 @@ public class BasicViewController {
         //выравниваем текст рекорда по центру
         HighScoreText.setTextAlignment(TextAlignment.CENTER);
 
-        //без этого метода не появляется надпись, пока не будет изменен размер изображения
-        HighScoreText.autosize();
+       //!!!Не обновляется надпись без изменения размера окна
     }
 
     @FXML
@@ -231,7 +230,7 @@ public class BasicViewController {
                 initialize();
             }
 
-            //доделать реконект, чтобы при переконекте обновлялась страница (мб сделать отдельную процедуру для перезагрузки страница)
+            //!!!доделать реконект, чтобы при переконекте обновлялась страница (мб сделать отдельную процедуру для перезагрузки страница)
         }
 
         try {

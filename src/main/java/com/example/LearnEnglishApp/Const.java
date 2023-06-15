@@ -23,9 +23,9 @@ public class Const {
 
     ////TextFilePatch
     //words
-    public static final String TEXT_FILE_WORDS_TABLE_PATH = ".\\src\\main\\resources\\com\\example\\LearnEnglishApp\\Datatext\\" + WORDS_TABLE + ".xlsx";
+    public static final String TEXT_FILE_WORDS_TABLE_PATH = ".\\src\\main\\resources\\com\\example\\LearnEnglishApp\\Datatext\\" + WORDS_TABLE + ".xls";
     //motivationtext
-    public static final String TEXT_FILE_MOTIVATION_TEXT_PATH = ".\\src\\main\\resources\\com\\example\\LearnEnglishApp\\Datatext\\" + MOTIVATION_TEXT_TABLE + ".xlsx";
+    public static final String TEXT_FILE_MOTIVATION_TEXT_PATH = ".\\src\\main\\resources\\com\\example\\LearnEnglishApp\\Datatext\\" + MOTIVATION_TEXT_TABLE + ".xls";
 
     ////Methods
     public static HashMap<String,String> getAllColumnsAndTables(){

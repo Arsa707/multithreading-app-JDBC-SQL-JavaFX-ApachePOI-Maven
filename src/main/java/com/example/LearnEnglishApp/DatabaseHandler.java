@@ -101,12 +101,13 @@ public class DatabaseHandler extends DataHandler {
         return resultSet;
     }
 
-    public boolean CheckSelection(String selectTextOfButton, String actualTextOfQuestion) throws SQLException {
+    public boolean CheckSelection(String selectTextOfButton, String actualTextOfQuestion) throws SQLException, IOException {
         boolean result = false;
         ResultSet resultSet;
-        String stringSQL = "SELECT * FROM " + Const.WORDS_TABLE + " WHERE TranslateRU = +\"" + selectTextOfButton + "\"" + " AND " + Const.WORD + " = \"" + actualTextOfQuestion + "\"";
+        String stringSQL = "SELECT * FROM " + Const.WORDS_TABLE + " WHERE "+Const.TRANSLATE_RU+" = +\"" + selectTextOfButton + "\"" + " AND " + Const.WORD + " = \"" + actualTextOfQuestion + "\"";
         resultSet = getResulSet(stringSQL);
         result = resultSet.next();
+
         return result;
     }
 

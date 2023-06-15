@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DataBaseAndTextFileHandler extends DatabaseHandler {
 
@@ -26,6 +27,60 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
         else needTextFileMode = !(reconnection());
         if (needTextFileMode) typeHandler = TypeHandler.TextFileTypeHandler;
         return needTextFileMode;
+    }
+
+    @Override
+    public boolean CheckSelection(String selectTextOfButton, String actualTextOfQuestion) throws SQLException, IOException {
+        boolean result = false;
+        if (needTextFileMode()) {
+
+            //Получаем таблицу
+            String table = Const.WORDS_TABLE;
+
+            //Получаем имя файла
+            Path textFilePatch = Const.getTextFilePatch(table);
+
+            //Получаем список колонок таблицы
+            ArrayList<String> columns = Const.getColumnsOfTable(table);
+
+            //Создаем коллекцию для сопоставления
+            HashMap<String, String> map = new HashMap<>();
+
+            //Открыть поток чтения файла
+            FileInputStream fileInputStream = new FileInputStream(textFilePatch.toString());
+            Workbook workbook = new HSSFWorkbook(fileInputStream);
+
+            int columnWordIndex = -1;
+            int columnTranslateIndex = -1;
+            for (int i = 0; i < columns.size(); i++) {
+                //Получаем название итерируемой колонки
+                String columnCell = workbook.getSheetAt(0).getRow(0).getCell(i).getStringCellValue();
+                if (columnCell.equals(Const.WORD)) columnWordIndex = i;
+                if (columnCell.equals(Const.TRANSLATE_RU)) columnTranslateIndex = i;
+            }
+
+            if (columnWordIndex > -1 && columnTranslateIndex > -1) {
+                boolean isFirst = true;
+                for (Row row : workbook.getSheetAt(0)) {
+                    //Пропускаем первую итерацию, т.к. в первой строке названия колонок
+                    if (isFirst) {
+                        isFirst = false;
+                        continue;
+                    }
+                    //Добавляем в коллекцию слово и его перевод
+                    String cellWord = row.getCell(columnWordIndex).getStringCellValue();
+                    String cellTranslate = row.getCell(columnTranslateIndex).getStringCellValue();
+                    if (cellWord.equals("")||cellTranslate.equals("")) break;
+                    map.put(cellWord,cellTranslate);
+                }
+            }
+            fileInputStream.close();
+
+            //Проверяем совпадение выбранного варианта с тем, что хранится в файле
+            result = selectTextOfButton.equals(map.get(actualTextOfQuestion));
+            return result;
+        }
+        return super.CheckSelection(selectTextOfButton, actualTextOfQuestion);
     }
 
     public static TypeHandler getTypeHandler() {
@@ -46,26 +101,31 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
             //Получаем список колонок таблицы
             ArrayList<String> columns = Const.getColumnsOfTable(table);
 
-            //получаем данные из файла
+            //Получаем данные из файла
             FileInputStream fileInputStream = new FileInputStream(textFilePatch.toString());
-            Workbook workbook = new HSSFWorkbook();
+            Workbook workbook = new HSSFWorkbook(fileInputStream);
             for (int i = 0; i < columns.size(); i++) {
 
+                //Получаем название итерируемой колонки
                 String columnCell = workbook.getSheetAt(0).getRow(0).getCell(i).getStringCellValue();
+                //Сравниваем колонку с той, из которой нам нужно получить данные
                 if (columnCell.equals(column)) {
                     boolean isFirst = true;
+                    //обходим каждый ряд первого личта
                     for (Row row : workbook.getSheetAt(0)) {
+                        //Пропускаем первую итерацию, т.к. в первой строке названия колонок
                         if (isFirst) {
                             isFirst = false;
                             continue;
                         }
-                        String cell = workbook.getSheetAt(0).getRow(0).getCell(i).getStringCellValue();
+
+                        //Добавляем в лист полученные значения, пока не упремся в пустую ячейку
+                        String cell = row.getCell(i).getStringCellValue();
                         if (cell.equals("")) break;
                         list.add(cell);
                     }
                 }
             }
-
             fileInputStream.close();
         } else return super.getArrayListWords(column);
         return list;
@@ -84,26 +144,26 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
         boolean isFile = Files.exists(excelFilePath);
         if (!needTextFileMode() || !isFile) {
             //Создаем первый лист файла
-        HSSFWorkbook workbook = new HSSFWorkbook();
-        HSSFSheet sheet = workbook.createSheet("Reviews");
+            HSSFWorkbook workbook = new HSSFWorkbook();
+            HSSFSheet sheet = workbook.createSheet("Reviews");
 
 
-        //Делаем запрос к БД
-        ResultSet resultSet;
-        String stringSQL = "SELECT * FROM " + table;
-        resultSet = getResulSet(stringSQL);
+            //Делаем запрос к БД
+            ResultSet resultSet;
+            String stringSQL = "SELECT * FROM " + table;
+            resultSet = getResulSet(stringSQL);
 
-        //Создаем файл Excel
-        writeHeaderLine(sheet, table);
+            //Создаем файл Excel
+            writeHeaderLine(sheet, table);
 
-        if (!needTextFileMode()) {
-            writeDataLines(resultSet, workbook, sheet, table);
-        }
+            if (!needTextFileMode()) {
+                writeDataLines(resultSet, workbook, sheet, table);
+            }
 
-        //Записываем файл
-        FileOutputStream outputStream = new FileOutputStream(excelFilePath.toString());
-        workbook.write(outputStream);
-        workbook.close();
+            //Записываем файл
+            FileOutputStream outputStream = new FileOutputStream(excelFilePath.toFile());
+            workbook.write(outputStream);
+            workbook.close();
         }
     }
 
