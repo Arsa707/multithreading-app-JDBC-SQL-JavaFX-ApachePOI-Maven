@@ -1,9 +1,13 @@
 package com.example.LearnEnglishApp;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -16,6 +20,15 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class BasicViewController {
+
+    private static boolean motivationThreadOn = false;
+
+    @FXML
+    private ImageView Cloud;
+
+    @FXML
+    private TextFlow MotivationText;
+
     @FXML
     private Button ButtonWord1;
 
@@ -52,8 +65,6 @@ public class BasicViewController {
         //устанавливаем новый текст вопроса
         LearnText.getChildren().add(textOfQuestion);
 
-        //выравниваем текст вопроса по центру
-        LearnText.setTextAlignment(TextAlignment.CENTER);
 
     }
 
@@ -80,17 +91,17 @@ public class BasicViewController {
             }
             actualTextOfHighScore = sb.toString();
         }
-        int numberOfHighScore = Integer.parseInt(actualTextOfHighScore);
+        int scoreCount = Integer.parseInt(actualTextOfHighScore);
 
-        //добавляем очки, в зависимости от успешного выбора кнопки
+        //добавляем очки, в зависимости от успеха выбора кнопки
         DataBaseAndTextFileHandler dataBaseAndTextFileHandler = new DataBaseAndTextFileHandler();
 
         if (selectTextOfButton.length() > 0) {
             if (dataBaseAndTextFileHandler.CheckSelection(selectTextOfButton, actualTextOfQuestion)) {
-                numberOfHighScore++;
-            } else numberOfHighScore = 0;
+                scoreCount++;
+            } else scoreCount = 0;
         }
-        String totalNumberOfHighScore = String.valueOf(numberOfHighScore);
+        String totalNumberOfHighScore = String.valueOf(scoreCount);
 
         //инициализируем текст рекорда
         Text textOfHighScore = new Text(totalNumberOfHighScore);
@@ -104,9 +115,8 @@ public class BasicViewController {
 
         //выравниваем текст рекорда по центру
         HighScoreText.setTextAlignment(TextAlignment.CENTER);
-
-       //!!!Не обновляется надпись без изменения размера окна
     }
+
 
     @FXML
     void setTextOnTheScene(String selectTextOfButton) throws SQLException, IOException {
@@ -123,12 +133,11 @@ public class BasicViewController {
         ArrayList<String> textOfButton = new ArrayList<>();
 
         //переменная с количеством кнопок
-        int numberOfButton = getButtonsArray().size();
+        int buttonCount = getButtonsArray().size();
         //переменная с количеством слов в БД
         int numberOfWords = englishWords.size();
-        //переменные с рандомными числами;
+        //переменна с рандомным числом;
         int randomNumber = 0;
-        int lastNumber = -1;
 
         //переменная для контроля цикла
         boolean toContinue = true;
@@ -136,7 +145,7 @@ public class BasicViewController {
         Random random = new Random();
 
         //заполняем массив рандомных чисел в пределах количества кнопок
-        for (int i = 0; i < numberOfButton; i++) {
+        for (int i = 0; i < buttonCount; i++) {
             toContinue = true;
             randomNumber = random.nextInt(numberOfWords);
 
@@ -149,21 +158,19 @@ public class BasicViewController {
             }
 
             if (toContinue) {
-                lastNumber = randomNumber;
                 randomNumbers.add(randomNumber);
-                lastRandomNumbers.add(lastNumber);
+                lastRandomNumbers.add(randomNumber);
             }
         }
 
         //сбрасываем значения переменных и массива с рандомными числами
         randomNumber = 0;
-        lastNumber = -1;
         lastRandomNumbers.clear();
 
         //заполняем массив рандомных слов
-        for (int i = 0; i < numberOfButton; i++) {
+        for (int i = 0; i < buttonCount; i++) {
             toContinue = true;
-            randomNumber = random.nextInt(numberOfButton);
+            randomNumber = random.nextInt(buttonCount);
 
             for (int actNumber : lastRandomNumbers) {
                 if (randomNumber == actNumber) {
@@ -173,9 +180,8 @@ public class BasicViewController {
                 }
             }
             if (toContinue) {
-                lastNumber = randomNumber;
                 textOfButton.add(RUWords.get(randomNumbers.get(randomNumber)));
-                lastRandomNumbers.add(lastNumber);
+                lastRandomNumbers.add(randomNumber);
             }
         }
 
@@ -183,7 +189,7 @@ public class BasicViewController {
         ObservableList<Node> nodes = LearnText.getChildren();
         StringBuilder sb = new StringBuilder();
         for (Node node : nodes) {
-            StringBuilder append = sb.append((((Text) node).getText()));
+            sb.append(((Text) node).getText());
         }
         String actualTextOfQuestion = sb.toString();
 
@@ -191,20 +197,96 @@ public class BasicViewController {
         String wordOfQuestion = "";
 
         //получаем слово для текста вопроса и проверяем на совпадение с текущим
-        for (int i = 0; i < numberOfButton; i++) {
-            randomNumber = random.nextInt(numberOfButton);
+        while (true) {
+            randomNumber = random.nextInt(buttonCount);
             wordOfQuestion = englishWords.get(randomNumbers.get(randomNumber));
-            if (actualTextOfQuestion.equals(wordOfQuestion.toString())) {
-                continue;
-            }
+            if (actualTextOfQuestion.equals(wordOfQuestion.toString())) continue;
             wordOfQuestion = englishWords.get(randomNumbers.get(randomNumber));
             break;
+        }
+
+        //Фоновая отрисовка надписей на форме
+        if (!motivationThreadOn) {
+            Thread motivationThread = new Thread() {
+
+                @Override
+                public void run() {
+                 //   ArrayList<String> motivationText;
+                    if (!motivationThreadOn) {
+                        motivationThreadOn = true;
+                   //     try {
+                   //         motivationText = dataBaseAndTextFileHandler.getArrayListWords(Const.MOTIVATION_TEXT);
+                   //     } catch (SQLException e) {
+                   //         throw new RuntimeException(e);
+                   //     } catch (IOException e) {
+                   //         throw new RuntimeException(e);
+                   //     }
+
+                   //     int motivationTextCount = motivationText.size();
+                    //    int i = motivationTextCount;
+                        while (motivationThreadOn) {
+                            //таймаут
+                            try {
+                                sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+
+                           // Text text = new Text(motivationText.get(i));
+                            Text text = new Text("sdsd");
+                            text.setFill(Color.BLACK);
+                            text.setFont(Font.font("Berlin Sans FL Demi", 12));
+
+                      ///     if (i > 0) {
+                       //         i--;
+                       //     } else i = motivationTextCount;
+
+
+                            //рисуем надпись и показываем облако мыслей
+                            //элементы GUI можно обновлять только в основном потоке или в такой конструкции!
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Cloud.setVisible(true);
+                                    MotivationText.getChildren().clear();
+                                    MotivationText.getChildren().setAll(text);
+                                }
+                            });
+
+
+                            //показываем некоторое время
+                            try {
+                                sleep(5000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+                            //затираем надпись и прячем облако
+                            //элементы GUI можно обновлять только в основном потоке или в такой конструкции!
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MotivationText.getChildren().clear();
+                                    Cloud.setVisible(false);
+                                }
+                            });
+
+                        }
+                    }
+                }
+            };
+            motivationThread.start();
         }
 
         //устанавливаем текст вопроса, рекорда и кнопок
         setTextOfQuestion(wordOfQuestion);
         setTextOfButton(textOfButton);
         setTextOfHighScore(selectTextOfButton, actualTextOfQuestion);
+
+        //без этих методов форма корректно не обновляется, пока не изменить размер. Стряхиваем пыль с костылей
+        LearnText.autosize();
+        HighScoreText.autosize();
     }
 
     @FXML
@@ -226,11 +308,9 @@ public class BasicViewController {
         } catch (Exception e) {
             e.printStackTrace();
             boolean result = dataBaseAndTextFileHandler.reconnection();
-            if(result){
+            if (result) {
                 initialize();
             }
-
-            //!!!доделать реконект, чтобы при переконекте обновлялась страница (мб сделать отдельную процедуру для перезагрузки страница)
         }
 
         try {

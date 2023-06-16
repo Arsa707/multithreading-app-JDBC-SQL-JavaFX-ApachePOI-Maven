@@ -111,7 +111,7 @@ public class DataBaseAndTextFileHandler extends DatabaseHandler {
                 //Сравниваем колонку с той, из которой нам нужно получить данные
                 if (columnCell.equals(column)) {
                     boolean isFirst = true;
-                    //обходим каждый ряд первого личта
+                    //обходим каждый ряд первого лиcта
                     for (Row row : workbook.getSheetAt(0)) {
                         //Пропускаем первую итерацию, т.к. в первой строке названия колонок
                         if (isFirst) {
