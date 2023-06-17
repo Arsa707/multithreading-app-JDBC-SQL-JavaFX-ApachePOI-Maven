@@ -52,6 +52,7 @@
           <artifactId>poi</artifactId>
           <version>5.2.3</version>
       </dependency>
+
   </dependencies>
 
   <build>
@@ -74,7 +75,7 @@
             <!-- Default configuration for running with: mvn clean javafx:run -->
             <id>default-cli</id>
             <configuration>
-              <mainClass>com.example.LearnEnglishApp/com.example.LearnEnglishApp.HelloApplication</mainClass>
+              <mainClass>com.example.LearnEnglishApp/com.example.LearnEnglishApp.Launcher</mainClass>
               <launcher>app</launcher>
               <jlinkZipName>app</jlinkZipName>
               <jlinkImageName>app</jlinkImageName>

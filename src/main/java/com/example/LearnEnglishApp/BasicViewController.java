@@ -4,8 +4,6 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
@@ -19,7 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class BasicViewController {
+public class BasicViewController{
 
     private static boolean motivationThreadOn = false;
 
@@ -94,7 +92,7 @@ public class BasicViewController {
         int scoreCount = Integer.parseInt(actualTextOfHighScore);
 
         //добавляем очки, в зависимости от успеха выбора кнопки
-        DataBaseAndTextFileHandler dataBaseAndTextFileHandler = new DataBaseAndTextFileHandler();
+        DatabaseAndTextFileHandler dataBaseAndTextFileHandler = new DatabaseAndTextFileHandler();
 
         if (selectTextOfButton.length() > 0) {
             if (dataBaseAndTextFileHandler.CheckSelection(selectTextOfButton, actualTextOfQuestion)) {
@@ -120,7 +118,7 @@ public class BasicViewController {
 
     @FXML
     void setTextOnTheScene(String selectTextOfButton) throws SQLException, IOException {
-        DataBaseAndTextFileHandler dataBaseAndTextFileHandler = new DataBaseAndTextFileHandler();
+        DatabaseAndTextFileHandler dataBaseAndTextFileHandler = new DatabaseAndTextFileHandler();
 
         //получаем массивы данных таблицы из БД
         ArrayList<String> englishWords = dataBaseAndTextFileHandler.getArrayListWords(Const.WORD);
@@ -211,36 +209,35 @@ public class BasicViewController {
 
                 @Override
                 public void run() {
-                 //   ArrayList<String> motivationText;
+                    ArrayList<String> motivationText;
                     if (!motivationThreadOn) {
                         motivationThreadOn = true;
-                   //     try {
-                   //         motivationText = dataBaseAndTextFileHandler.getArrayListWords(Const.MOTIVATION_TEXT);
-                   //     } catch (SQLException e) {
-                   //         throw new RuntimeException(e);
-                   //     } catch (IOException e) {
-                   //         throw new RuntimeException(e);
-                   //     }
+                        try {
+                            motivationText = dataBaseAndTextFileHandler.getArrayListWords(Const.MOTIVATION_TEXT);
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
 
-                   //     int motivationTextCount = motivationText.size();
-                    //    int i = motivationTextCount;
+                        int motivationTextCount = motivationText.size();
+                        int i = motivationTextCount-1;
                         while (motivationThreadOn) {
                             //таймаут
                             try {
-                                sleep(1000);
+                                sleep(Configs.getTextDisplayTimeout());
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
 
 
-                           // Text text = new Text(motivationText.get(i));
-                            Text text = new Text("sdsd");
+                            Text text = new Text(motivationText.get(i));
                             text.setFill(Color.BLACK);
                             text.setFont(Font.font("Berlin Sans FL Demi", 12));
 
-                      ///     if (i > 0) {
-                       //         i--;
-                       //     } else i = motivationTextCount;
+                           if (i > 0) {
+                                i--;
+                            } else i = motivationTextCount-1;
 
 
                             //рисуем надпись и показываем облако мыслей
@@ -257,7 +254,7 @@ public class BasicViewController {
 
                             //показываем некоторое время
                             try {
-                                sleep(5000);
+                                sleep(7000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -284,14 +281,14 @@ public class BasicViewController {
         setTextOfButton(textOfButton);
         setTextOfHighScore(selectTextOfButton, actualTextOfQuestion);
 
-        //без этих методов форма корректно не обновляется, пока не изменить размер. Стряхиваем пыль с костылей
+        //без этих методов форма корректно не обновляется, пока не изменить размер. Стряхиваем пыль с костылей...
         LearnText.autosize();
         HighScoreText.autosize();
     }
 
     @FXML
     void initialize() {
-        DataBaseAndTextFileHandler dataBaseAndTextFileHandler = new DataBaseAndTextFileHandler();
+        DatabaseAndTextFileHandler dataBaseAndTextFileHandler = new DatabaseAndTextFileHandler();
 
         //Получаем список таблиц, сами таблицы из БД и обновляем данные файловых таблиц
         try {

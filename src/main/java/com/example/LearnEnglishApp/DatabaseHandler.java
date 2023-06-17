@@ -12,11 +12,7 @@ import java.util.Optional;
 public class DatabaseHandler extends DataHandler {
 
     private static Connection dbConnection;
-    private static boolean reconnectionQuestionAsked = false;
-
-    public DatabaseHandler(){
-        if (getDbConnection()==null) setDbConnection();
-    }
+    private static boolean reconnectionQuestionAsked = (Configs.isFileMode()) ? true : false;
 
     public boolean isReconnectionQuestionAsked() {
         return reconnectionQuestionAsked;
@@ -116,7 +112,8 @@ public class DatabaseHandler extends DataHandler {
     public ArrayList<String> getArrayListWords(String column) throws SQLException, IOException {
         ArrayList<String> words = new ArrayList<>();
         ResultSet resultSet;
-        String stringSQL = "SELECT * FROM " + Const.WORDS_TABLE;
+        String table = Const.getTableOfColumn(column);
+        String stringSQL = "SELECT * FROM " + table;
         resultSet = getResulSet(stringSQL);
         while (resultSet.next()) {
             words.add(resultSet.getString(column));

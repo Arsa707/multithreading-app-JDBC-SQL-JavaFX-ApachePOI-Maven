@@ -34,7 +34,7 @@
                </font>
             </Text>
             <TextFlow fx:id="HighScoreText" layoutX="198.0" layoutY="43.0" prefHeight="55.0" prefWidth="200.0" />
-            <TextFlow fx:id="MotivationText" layoutX="416.0" layoutY="18.0" prefHeight="43.0" prefWidth="100.0" textAlignment="CENTER" />
+            <TextFlow fx:id="MotivationText" layoutX="422.5" layoutY="18.0" prefHeight="43.0" prefWidth="100.0" textAlignment="CENTER" />
          </children>
       </AnchorPane>
    </children>
