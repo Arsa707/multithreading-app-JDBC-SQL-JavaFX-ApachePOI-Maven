@@ -1,0 +1,7 @@
+dbPass = 12345678;
+dbPort = 3306;
+textDisplayTimeout = 10000;
+dbName = appdata;
+dbUser = root;
+dbHost = localhost;
+fileMode = true;
