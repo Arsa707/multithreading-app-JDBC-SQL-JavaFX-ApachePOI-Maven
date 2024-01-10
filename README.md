@@ -8,3 +8,6 @@ In the "motivationtext.xls" table, you can optionally fill in phrases for motiva
 
 The file "Configs" will also be created, in this file you can configure the client-server mode, configure the connection settings and the bear talk timeout.
 It is necessary to create tables in the database with the structure of already created tables in the "DataText" folder for the client-server mode to work correctly
+
+
+![App](https://github.com/Arsa707/multithreading-app-JDBC-SQL-JavaFX-ApachePOI-Maven/assets/104760838/3b500fba-e417-4f0b-a862-391e7a5b4e0d)
